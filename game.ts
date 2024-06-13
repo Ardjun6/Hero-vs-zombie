@@ -31,6 +31,8 @@ type Structure = {
 type Circle = {
     x: number;
     y: number;
+    color: string;
+    itemType: number;
 };
 
 type Particle = {
@@ -42,10 +44,24 @@ type Particle = {
     color: string;
 };
 
+type Portal = {
+    x: number;
+    y: number;
+    color: string;
+};
+
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 const gameOverScreen = document.getElementById('gameOverScreen')!;
 const scoreDisplay = document.getElementById('scoreDisplay')!;
+const hotbar = document.getElementById('hotbar')!;
+const itemCounts = {
+    1: document.getElementById('item1-count')!,
+    2: document.getElementById('item2-count')!,
+    3: document.getElementById('item3-count')!,
+    4: document.getElementById('item4-count')!,
+    5: document.getElementById('item5-count')!
+};
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -69,14 +85,83 @@ let hero: GameObject = {
 };
 let zombies: GameObject[] = [];
 let barrels: Circle[] = [];
-let blueCircles: Circle[] = [];
+let itemCircles: Circle[] = [];
 let particles: Particle[] = [];
+let portals: { orange?: Portal, blue?: Portal } = {};
 let wave = 1;
 let structures: Structure[] = [];
 let keys: { [key: string]: boolean } = {};
 let mouseX = 0;
 let mouseY = 0;
 let gameOver = false;
+let selectedItem = 1;
+let flamethrowerActive = false;
+let machineGunActive = false;
+let healingItems = 1;
+
+const itemActions: { [key: number]: () => void } = {
+    1: () => placeBarrel(),
+    2: () => activatePortalGun(),
+    3: () => activateFlamethrower(),
+    4: () => toggleMachineGun(),
+    5: () => healHero()
+};
+
+function activatePortalGun() {
+    console.log('Portal Gun activated');
+}
+
+function placePortal(color: string) {
+    let x = mouseX;
+    let y = mouseY;
+    portals[color] = { x, y, color };
+}
+
+function teleport(object: GameObject, portal: Portal) {
+    const otherPortal = portal.color === 'orange' ? portals.blue : portals.orange;
+    if (otherPortal) {
+        object.x = otherPortal.x;
+        object.y = otherPortal.y;
+    }
+}
+
+function activateFlamethrower() {
+    flamethrowerActive = true;
+    updateHotbar();
+    console.log('Flamethrower activated');
+}
+
+function toggleMachineGun() {
+    machineGunActive = !machineGunActive;
+    updateHotbar();
+    console.log(`Machine Gun ${machineGunActive ? 'activated' : 'deactivated'}`);
+}
+
+function healHero() {
+    if (healingItems > 0) {
+        hero.health = Math.min(hero.health! + 50, 100);
+        healingItems--;
+        updateHotbar();
+        console.log('Hero healed');
+    }
+}
+
+function updateHotbar() {
+    itemCounts[1].textContent = hero.barrels!.toString();
+    itemCounts[1].style.color = hero.barrels! > 0 ? 'green' : 'red';
+
+    itemCounts[2].textContent = 'Active';
+    itemCounts[2].style.color = 'green';
+
+    itemCounts[3].textContent = flamethrowerActive ? 'Active' : 'Inactive';
+    itemCounts[3].style.color = flamethrowerActive ? 'green' : 'red';
+
+    itemCounts[4].textContent = machineGunActive ? 'Active' : 'Inactive';
+    itemCounts[4].style.color = machineGunActive ? 'green' : 'red';
+
+    itemCounts[5].textContent = healingItems.toString();
+    itemCounts[5].style.color = healingItems > 0 ? 'green' : 'red';
+}
 
 window.addEventListener('keydown', (e) => {
     keys[e.key.toLowerCase()] = true;
@@ -86,8 +171,11 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'Shift') {
         hero.sprinting = true;
     }
-    if (e.key === '1' && hero.barrels! > 0) {
-        placeBarrel();
+    if (e.key >= '1' && e.key <= '5') {
+        selectedItem = parseInt(e.key);
+        if (itemActions[selectedItem]) {
+            itemActions[selectedItem]();
+        }
     }
 });
 
@@ -107,12 +195,30 @@ canvas.addEventListener('mousemove', (e) => {
 });
 
 canvas.addEventListener('mousedown', (e) => {
-    hero.bullets!.push({
-        x: hero.x,
-        y: hero.y,
-        angle: Math.atan2(mouseY - hero.y, mouseX - hero.x),
-        speed: 5,
-    });
+    if (machineGunActive || flamethrowerActive) {
+        hero.bullets!.push({
+            x: hero.x,
+            y: hero.y,
+            angle: Math.atan2(mouseY - hero.y, mouseX - hero.x),
+            speed: machineGunActive ? 10 : 5,
+        });
+    } else {
+        hero.bullets!.push({
+            x: hero.x,
+            y: hero.y,
+            angle: Math.atan2(mouseY - hero.y, mouseX - hero.x),
+            speed: 5,
+        });
+    }
+});
+
+window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'e') {
+        placePortal('orange');
+    }
+    if (e.key.toLowerCase() === 'r') {
+        placePortal('blue');
+    }
 });
 
 function spawnZombies() {
@@ -152,13 +258,14 @@ function spawnZombies() {
     }
 }
 
-function spawnBlueCircle() {
+function spawnItemCircle(itemType: number) {
     let x: number, y: number;
     do {
         x = Math.random() * (canvas.width - 40) + 20;
         y = Math.random() * (canvas.height - 40) + 20;
     } while (detectCollision(x - 10, y - 10, 20, 20));
-    blueCircles.push({ x: x, y: y });
+    const colors = ['orange', 'purple', 'yellow', 'lightgreen'];
+    itemCircles.push({ x: x, y: y, color: colors[itemType - 1], itemType: itemType });
 }
 
 function createStructures() {
@@ -188,6 +295,10 @@ function detectCollision(x: number, y: number, width: number, height: number): b
         }
     }
     return false;
+}
+
+function hypot(x: number, y: number): number {
+    return Math.sqrt(x * x + y * y);
 }
 
 function updateHero() {
@@ -262,7 +373,7 @@ function updateZombies() {
             const structureCenterY = structure.y + structure.height / 2;
             const dist_to_structure_x = structureCenterX - zombie.x;
             const dist_to_structure_y = structureCenterY - zombie.y;
-            const dist_to_structure = Math.hypot(dist_to_structure_x, dist_to_structure_y);
+            const dist_to_structure = hypot(dist_to_structure_x, dist_to_structure_y);
 
             if (dist_to_structure < 100) {
                 const avoidAngle = Math.atan2(dist_to_structure_y, dist_to_structure_x) + Math.PI;
@@ -286,11 +397,18 @@ function updateZombies() {
         }
 
         // Check for collision with hero
-        if (Math.hypot(zombie.x - hero.x, zombie.y - hero.y) < 20) {
+        if (hypot(zombie.x - hero.x, zombie.y - hero.y) < 20) {
             hero.health! -= zombie.damage!; // Decrease hero's health
             if (hero.health! <= 0 && !gameOver) {
                 endGame();
             }
+        }
+
+        // Check for teleportation through portals
+        if (portals.orange && hypot(zombie.x - portals.orange.x, zombie.y - portals.orange.y) < 20) {
+            teleport(zombie, portals.orange);
+        } else if (portals.blue && hypot(zombie.x - portals.blue.x, zombie.y - portals.blue.y) < 20) {
+            teleport(zombie, portals.blue);
         }
     });
 }
@@ -343,6 +461,21 @@ function drawBullets() {
     });
 }
 
+function drawPortals() {
+    if (portals.orange) {
+        ctx.beginPath();
+        ctx.arc(portals.orange.x, portals.orange.y, 15, 0, 2 * Math.PI);
+        ctx.fillStyle = 'orange';
+        ctx.fill();
+    }
+    if (portals.blue) {
+        ctx.beginPath();
+        ctx.arc(portals.blue.x, portals.blue.y, 15, 0, 2 * Math.PI);
+        ctx.fillStyle = 'blue';
+        ctx.fill();
+    }
+}
+
 function drawStructures() {
     structures.forEach((structure) => {
         ctx.fillStyle = 'gray';
@@ -350,11 +483,11 @@ function drawStructures() {
     });
 }
 
-function drawBlueCircles() {
-    blueCircles.forEach((circle) => {
+function drawItemCircles() {
+    itemCircles.forEach((circle) => {
         ctx.beginPath();
         ctx.arc(circle.x, circle.y, 10, 0, 2 * Math.PI);
-        ctx.fillStyle = 'blue';
+        ctx.fillStyle = circle.color;
         ctx.fill();
     });
 }
@@ -379,7 +512,7 @@ function checkCollisions() {
     zombies = zombies.filter((zombie) => {
         let hit = false;
         hero.bullets = hero.bullets!.filter((bullet) => {
-            if (Math.hypot(zombie.x - bullet.x, zombie.y - bullet.y) < 10) {
+            if (hypot(zombie.x - bullet.x, zombie.y - bullet.y) < 10) {
                 zombie.health!--;
                 if (zombie.health! <= 0) {
                     hit = true;
@@ -397,7 +530,7 @@ function checkBarrelCollisions() {
     barrels = barrels.filter((barrel) => {
         let exploded = false;
         hero.bullets = hero.bullets!.filter((bullet) => {
-            if (Math.hypot(barrel.x - bullet.x, barrel.y - bullet.y) < 15) {
+            if (hypot(barrel.x - bullet.x, barrel.y - bullet.y) < 15) {
                 explodeBarrel(barrel.x, barrel.y);
                 exploded = true;
                 return false;
@@ -408,10 +541,24 @@ function checkBarrelCollisions() {
     });
 }
 
-function checkBlueCircleCollisions() {
-    blueCircles = blueCircles.filter((circle) => {
-        if (Math.hypot(circle.x - hero.x, circle.y - hero.y) < 20) {
-            hero.barrels = Math.min(hero.barrels! + 1, 10);
+function checkItemCircleCollisions() {
+    itemCircles = itemCircles.filter((circle) => {
+        if (hypot(circle.x - hero.x, circle.y - hero.y) < 20) {
+            switch (circle.itemType) {
+                case 1:
+                    flamethrowerActive = true;
+                    break;
+                case 2:
+                    machineGunActive = true;
+                    break;
+                case 3:
+                    portalGunActive = true;
+                    break;
+                case 4:
+                    healingItems = Math.min(healingItems + 1, 10);
+                    break;
+            }
+            updateHotbar();
             return false;
         }
         return true;
@@ -434,7 +581,7 @@ function explodeBarrel(x: number, y: number) {
     // Increase the explosion radius to 1.5x
     const explosionRadius = 75;
     zombies = zombies.filter((zombie) => {
-        if (Math.hypot(zombie.x - x, zombie.y - y) < explosionRadius) {
+        if (hypot(zombie.x - x, zombie.y - y) < explosionRadius) {
             hero.score!++;
             return false;
         }
@@ -447,7 +594,7 @@ function placeBarrel() {
         let barrelX = hero.x + 20 * Math.cos(hero.angle! * Math.PI / 180);
         let barrelY = hero.y + 20 * Math.sin(hero.angle! * Math.PI / 180);
         if (!detectCollision(barrelX - 10, barrelY - 10, 20, 20)) {
-            barrels.push({ x: barrelX, y: barrelY });
+            barrels.push({ x: barrelX, y: barrelY, color: 'brown', itemType: 1 });
             hero.barrels!--;
         }
     }
@@ -467,12 +614,20 @@ function endGame() {
     hero.barrels = 0;
     zombies = [];
     barrels = [];
-    blueCircles = [];
+    itemCircles = [];
     particles = [];
+    portals = {};
+    flamethrowerActive = false;
+    machineGunActive = false;
+    healingItems = 1;
+    updateHotbar();
     wave = 1;
     spawnZombies();
     createStructures();
-    spawnBlueCircle();
+    spawnItemCircle(1);
+    spawnItemCircle(2);
+    spawnItemCircle(3);
+    spawnItemCircle(4);
     gameLoop();
 };
 
@@ -489,12 +644,13 @@ function gameLoop() {
     updateParticles();
     checkCollisions();
     checkBarrelCollisions();
-    checkBlueCircleCollisions();
+    checkItemCircleCollisions();
     drawStructures();
     drawHero();
     drawZombies();
     drawBullets();
-    drawBlueCircles();
+    drawPortals();
+    drawItemCircles();
     drawBarrels();
     drawParticles();
 
@@ -502,7 +658,10 @@ function gameLoop() {
         wave++;
         createStructures();
         spawnZombies();
-        spawnBlueCircle();
+        spawnItemCircle(1);
+        spawnItemCircle(2);
+        spawnItemCircle(3);
+        spawnItemCircle(4);
     }
 
     requestAnimationFrame(gameLoop);
@@ -510,5 +669,8 @@ function gameLoop() {
 
 createStructures();
 spawnZombies();
-spawnBlueCircle();
+spawnItemCircle(1);
+spawnItemCircle(2);
+spawnItemCircle(3);
+spawnItemCircle(4);
 gameLoop();
