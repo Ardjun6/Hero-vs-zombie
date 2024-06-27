@@ -45,6 +45,7 @@ var phantomBullets = 100;
 var minigunActive = false;
 var minigunBullets = 500;
 var waveInProgress = false;
+var shootingInterval;
 var itemActions = {
     1: function () { return placeBarrel(); },
     2: function () { return toggleMachineGun(); },
@@ -55,6 +56,7 @@ function toggleMachineGun() {
     machineGunActive = !machineGunActive;
     phantomBulletsActive = false;
     minigunActive = false;
+    clearInterval(shootingInterval);
     updateHotbar();
     console.log("Machine Gun ".concat(machineGunActive ? 'activated' : 'deactivated'));
 }
@@ -62,6 +64,7 @@ function togglePhantomBullets() {
     phantomBulletsActive = !phantomBulletsActive;
     machineGunActive = false;
     minigunActive = false;
+    clearInterval(shootingInterval);
     updateHotbar();
     console.log("Phantom Bullets ".concat(phantomBulletsActive ? 'activated' : 'deactivated'));
 }
@@ -69,6 +72,7 @@ function toggleMinigun() {
     minigunActive = !minigunActive;
     machineGunActive = false;
     phantomBulletsActive = false;
+    clearInterval(shootingInterval);
     updateHotbar();
     console.log("Minigun ".concat(minigunActive ? 'activated' : 'deactivated'));
 }
@@ -133,14 +137,26 @@ canvas.addEventListener('mousedown', function (e) {
         updateHotbar();
     }
     else if (minigunActive && minigunBullets > 0) {
-        hero.bullets.push({
-            x: hero.x,
-            y: hero.y,
-            angle: Math.atan2(mouseY - hero.y, mouseX - hero.x),
-            speed: 10,
-        });
-        minigunBullets--;
-        updateHotbar();
+        shootingInterval = window.setInterval(function () {
+            if (minigunBullets > 0) {
+                hero.bullets.push({
+                    x: hero.x,
+                    y: hero.y,
+                    angle: Math.atan2(mouseY - hero.y, mouseX - hero.x),
+                    speed: 10,
+                });
+                minigunBullets--;
+                updateHotbar();
+            }
+            else {
+                clearInterval(shootingInterval);
+            }
+        }, 125); // 8 bullets per second
+    }
+});
+canvas.addEventListener('mouseup', function (e) {
+    if (minigunActive) {
+        clearInterval(shootingInterval);
     }
 });
 function spawnZombies() {

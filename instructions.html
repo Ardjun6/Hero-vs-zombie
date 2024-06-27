@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Instructions</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: url('./path/to/your/background/image.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Arial', sans-serif;
+            color: white;
+            text-align: center;
+        }
+        .container {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 90%;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-family: 'Creepster', cursive;
+            color: #ff6347;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            font-size: 1.2em;
+            text-align: left;
+        }
+        li {
+            margin: 15px 0;
+            line-height: 1.5em;
+        }
+        li::before {
+            content: "•";
+            color: #ff6347;
+            font-size: 1.5em;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff6347;
+            color: white;
+            transition: background-color 0.3s, transform 0.3s;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #e5533d;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Game Instructions</h1>
+        <ul>
+            <li><strong>W:</strong> Move Up</li>
+            <li><strong>A:</strong> Move Left</li>
+            <li><strong>S:</strong> Move Down</li>
+            <li><strong>D:</strong> Move Right</li>
+            <li><strong>Z:</strong> Dash</li>
+            <li><strong>Shift:</strong> Sprint</li>
+            <li><strong>1:</strong> Place Barrel</li>
+            <li><strong>2:</strong> Activate/Deactivate Machine Gun</li>
+            <li><strong>3:</strong> Activate/Deactivate Phantom Bullets</li>
+            <li><strong>4:</strong> Activate/Deactivate Minigun</li>
+            <li><strong>Left Mouse Button:</strong> Shoot Bullets</li>
+        </ul>
+        <button onclick="goBack()">Go Back</button>
+    </div>
+
+    <script>
+        function goBack() {
+            window.location.href = 'home.html'; // Replace with the actual home page URL
+        }
+    </script>
+</body>
+</html>

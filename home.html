@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Home</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: url('./assets/zombie-background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            color: rgb(255, 255, 255);
+        }
+        h1 {
+            font-size: 4em;
+            margin-bottom: 0.5em;
+        }
+        h2 {
+            font-size: 2em;
+            margin-top: 0;
+            margin-bottom: 1em;
+        }
+        .promo {
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 150px;
+            height: 150px;
+            background-color: rgba(218, 165, 32, 0.368);
+            transform: rotate(45deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            font-size: 1.2em;
+        }
+        .promo span {
+            transform: rotate(-45deg);
+        }
+        .bottom-bar {
+            position: absolute;
+            bottom: 10%;
+            width: 80%;
+            display: flex;
+            justify-content: space-around;
+        }
+        .bottom-bar div {
+            background-color: lightpink;
+            padding: 20px;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .buttons {
+            display: grid;
+            justify-content: center;
+            gap: 1em;
+            margin-top: 1em;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: lightblue;
+            color: black;
+            transition: background-color 0.3s;
+        }
+        .buttons button:hover {
+            background-color: deepskyblue;
+        }
+    </style>
+</head>
+<body>
+    <div class="promo"><span>Promoties</span></div>
+    <div class="container">
+        <h1>Game Name</h1>
+        <h2>Singleplayer</h2>
+        <div class="buttons">
+            <button onclick="startGame()">Start Game</button>
+            <button onclick="viewInstructions()">Instructions</button>
+        </div>
+    </div>
+    <div class="bottom-bar">
+        <div>Als er meer games zijn komen ze hier</div>
+        <div>Als er meer games zijn komen ze hier</div>
+        <div>Als er meer games zijn komen ze hier</div>
+    </div>
+
+    <script>
+        function startGame() {
+            window.location.href = 'game.html'; // Replace with the actual game page URL
+        }
+
+        function viewInstructions() {
+            window.location.href = 'instructions.html'; // Replace with the actual instructions page URL
+        }
+    </script>
+</body>
+</html>

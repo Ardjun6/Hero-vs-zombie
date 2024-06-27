@@ -95,6 +95,7 @@ let phantomBullets = 100;
 let minigunActive = false;
 let minigunBullets = 500;
 let waveInProgress = false;
+let shootingInterval: number | undefined;
 
 const itemActions: { [key: number]: () => void } = {
     1: () => placeBarrel(),
@@ -107,6 +108,7 @@ function toggleMachineGun() {
     machineGunActive = !machineGunActive;
     phantomBulletsActive = false;
     minigunActive = false;
+    clearInterval(shootingInterval);
     updateHotbar();
     console.log(`Machine Gun ${machineGunActive ? 'activated' : 'deactivated'}`);
 }
@@ -115,6 +117,7 @@ function togglePhantomBullets() {
     phantomBulletsActive = !phantomBulletsActive;
     machineGunActive = false;
     minigunActive = false;
+    clearInterval(shootingInterval);
     updateHotbar();
     console.log(`Phantom Bullets ${phantomBulletsActive ? 'activated' : 'deactivated'}`);
 }
@@ -123,6 +126,7 @@ function toggleMinigun() {
     minigunActive = !minigunActive;
     machineGunActive = false;
     phantomBulletsActive = false;
+    clearInterval(shootingInterval);
     updateHotbar();
     console.log(`Minigun ${minigunActive ? 'activated' : 'deactivated'}`);
 }
@@ -193,14 +197,26 @@ canvas.addEventListener('mousedown', (e) => {
         phantomBullets--;
         updateHotbar();
     } else if (minigunActive && minigunBullets > 0) {
-        hero.bullets!.push({
-            x: hero.x,
-            y: hero.y,
-            angle: Math.atan2(mouseY - hero.y, mouseX - hero.x),
-            speed: 10,
-        });
-        minigunBullets--;
-        updateHotbar();
+        shootingInterval = window.setInterval(() => {
+            if (minigunBullets > 0) {
+                hero.bullets!.push({
+                    x: hero.x,
+                    y: hero.y,
+                    angle: Math.atan2(mouseY - hero.y, mouseX - hero.x),
+                    speed: 10,
+                });
+                minigunBullets--;
+                updateHotbar();
+            } else {
+                clearInterval(shootingInterval);
+            }
+        }, 125); // 8 bullets per second
+    }
+});
+
+canvas.addEventListener('mouseup', (e) => {
+    if (minigunActive) {
+        clearInterval(shootingInterval);
     }
 });
 

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hero vs Zombie Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+        .game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .game-over h1 {
+            font-family: 'Creepster', cursive;
+            font-size: 4em;
+            margin: 0;
+        }
+        .game-over button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .hotbar {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .hotbar img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .hotbar .item-count {
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            color: green;
+            margin-top: -60px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div class="hotbar" id="hotbar">
+        <div>
+            <img src="./assets/TNT_barrel.png" id="item1" alt="Item 1">
+            <div class="item-count" id="item1-count">0</div>
+        </div>
+        <div>
+            <img src="./assets/Machine_gun.png" id="item2" alt="Item 2">
+            <div class="item-count" id="item2-count">Inactive</div>
+        </div>
+        <div>
+            <img src="./assets/Phantom_bullets.png" id="item3" alt="Item 3">
+            <div class="item-count" id="item3-count">Inactive</div>
+        </div>
+        <div>
+            <img src="./assets/Minigun.png" id="item4" alt="Item 4">
+            <div class="item-count" id="item4-count">Inactive</div>
+        </div>
+    </div>
+    <div class="game-over" id="gameOverScreen">
+        <h1>GAME OVER</h1>
+        <p id="scoreDisplay">Score: 0</p>
+        <button onclick="tryAgain()">Try Again</button>
+        <button onclick="goHome()">Go to Home</button>
+    </div>
+    <script src="game.js" type="module"></script>
+</body>
+</html>
